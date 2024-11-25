@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { SendHorizontal } from "lucide-react";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   imageUrl?: string;
+  userImageUrl?: string;
 }
 
 const isImageValid = async (url: string): Promise<boolean> => {
@@ -23,28 +24,28 @@ export default function ImageGeneratorChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
-  // const intro = "naked woman";
+  //   const [imageUrl, setImageUrl] = useState("");
+  const [userImageUrl, setUserImageUrl] = useState("");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!userImageUrl) return;
 
     const userMessage: ChatMessage = {
       role: "user",
-      content: input,
+      content: input || "Generate image",
     };
     setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
     // const string =
-    //   "23 yo,full body naked,  exposed, vaginal, cumshot, 1girl, masterpiece, best quality, (photorealistic:1.15), perfect lighting, (photorealism:1.15), beautiful, aesthetic, high quality, 4k, erotic";
+    //   "23 yo,full body naked,  exposed, vaginal, cumshot, 1girl, masterpiece, best quality, (photorealistic:1.15)";
     const string =
-      "full body exposed naked woman ,  exposed, vaginal, 1girl smile, sun shining through window, masterpiece, realistic, life like quality, human like, best quality, perfect lighting, photorealism:1.4, beautiful, best quality, aesthetic, high quality, best quality, 4k, exotic, perfect lighting, masterpiece, symmetric eyes, centered in frame.";
-    const userPrompt = input + " " + string;
+      "full body exposed naked woman,masterpiece, realistic, life like quality, human like, best quality, perfect lighting, photorealism:1.4, beautiful, best quality, aesthetic, high quality, best quality, 4k, exotic, perfect lighting, masterpiece, symmetric eyes, centered in frame.";
+    setIsLoading(true);
+    const prompt = input + " " + string;
 
     try {
       const response = await fetch(
-        " https://modelslab.com/api/v6/images/text2img",
+        "https://modelslab.com/api/v6/image_editing/head_shot",
         {
           method: "POST",
           headers: {
@@ -52,44 +53,25 @@ export default function ImageGeneratorChat() {
           },
           body: JSON.stringify({
             key: "UIUprIu10B3tIL4bFbGn2W6Yt1Va5n1Pb7OaCrO1YJt2C5y0XvU1Wqzv6iRy",
-
-            prompt: userPrompt,
+            prompt: prompt,
             negative_prompt:
-              "(low quality:1.9), (normal quality:1.9), lowres, bad hands, bad anatomy, watermark, ugly, deformed, disfigured, mutated, extra limbs, long body, anatomical nonsense, malformed hands, long neck, missing limb, floating limbs, anime, deformed face, covered penis.",
-            model_id: "juggernaut-xl",
-
-            //  negative_prompt: null,
-            panorama: null,
-            self_attention: "yes",
-            width: "768",
-            guidance: "8",
-            height: "1024",
-            enhance_style: "surrealist",
-            samples: 1,
-            lora_model: "nsfw-sdxl",
-
-            lora_strength: 0.5,
-            upscale: 1,
-            safety_checker: "no",
-            clip_skip: 2,
-            free_u: null,
-            instant_response: null,
-            steps: 21,
-            use_karras_sigmas: null,
-            algorithm_type: null,
-            safety_checker_type: "no",
-            tomesd: "no",
+              "anime, cartoon, drawing, big nose, long nose, fat, ugly, big lips, big mouth, face proportion mismatch, unrealistic, monochrome, lowres, bad anatomy, worst quality, low quality, blurry",
+            face_image: userImageUrl || "",
+            width: "512",
+            height: "512",
+            samples: "1",
+            num_inference_steps: "21",
+            safety_checker: false,
+            base64: false,
             seed: null,
-            webhook: "null",
-            track_id: "null",
-            scheduler: "EulerAncestralDiscreteScheduler",
-            base64: null,
-            temp: null,
-            vae: null,
-            embeddings: "verybadimagenegativev13,ngdeepnegativev175tn",
+            guidance_scale: 7.5,
+            webhook: null,
+            track_id: null,
           }),
         }
       );
+
+      setInput("");
 
       const data = await response.json();
       const imageId = data.id;
@@ -152,11 +134,15 @@ export default function ImageGeneratorChat() {
     } finally {
       setIsLoading(false);
       setIsImageLoading(false);
+      setUserImageUrl("");
     }
   };
 
   return (
     <main className="flex flex-col h-screen max-w-4xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-blue-500 underline">
+        Face Swap
+      </h1>
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.map((message, index) => (
           <div
@@ -201,22 +187,33 @@ export default function ImageGeneratorChat() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <input
           type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Describe the image you want to generate..."
+          value={userImageUrl}
+          onChange={(e) => setUserImageUrl(e.target.value)}
+          placeholder="Enter image URL..."
           className="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
         />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Send message">
-          <SendHorizontal className="w-6 h-6" />
-        </button>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Optional: Describe the image you want to generate..."
+            className="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !userImageUrl}
+            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Send message">
+            <SendHorizontal className="w-6 h-6" />
+          </button>
+        </div>
       </form>
     </main>
   );

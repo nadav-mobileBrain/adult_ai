@@ -39,7 +39,7 @@ export default function ImageGeneratorChat() {
     // const string =
     //   "23 yo,full body naked,  exposed, vaginal, cumshot, 1girl, masterpiece, best quality, (photorealistic:1.15), perfect lighting, (photorealism:1.15), beautiful, aesthetic, high quality, 4k, erotic";
     const string =
-      "full body exposed naked woman ,  exposed, vaginal, 1girl smile, sun shining through window, masterpiece, realistic, life like quality, human like, best quality, perfect lighting, photorealism:1.4, beautiful, best quality, aesthetic, high quality, best quality, 4k, exotic, perfect lighting, masterpiece, symmetric eyes, centered in frame.";
+      "full body exposed naked woman , ,  exposed, vaginal, 1girl smile, sun shining through window, masterpiece, realistic, life like quality, human like, best quality, perfect lighting, photorealism:1.4, beautiful, best quality, aesthetic, high quality, best quality, 4k, exotic, perfect lighting, masterpiece, symmetric eyes, centered in frame.";
     const userPrompt = input + " " + string;
 
     try {
@@ -56,8 +56,7 @@ export default function ImageGeneratorChat() {
             prompt: userPrompt,
             negative_prompt:
               "(low quality:1.9), (normal quality:1.9), lowres, bad hands, bad anatomy, watermark, ugly, deformed, disfigured, mutated, extra limbs, long body, anatomical nonsense, malformed hands, long neck, missing limb, floating limbs, anime, deformed face, covered penis.",
-            model_id: "juggernaut-xl",
-
+            model_id: "epicrealism-xl",
             //  negative_prompt: null,
             panorama: null,
             self_attention: "yes",
